@@ -6,6 +6,7 @@ package com.typesafe.config;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * An immutable map from config paths to config values.
@@ -429,13 +430,13 @@ public interface Config extends ConfigMergeable {
      * @throws ConfigException.BadValue
      *             if value cannot be parsed as a number of milliseconds
      */
-    Long getMilliseconds(String path);
+    @Deprecated Long getMilliseconds(String path);
 
     /**
      * Get value as a duration in nanoseconds. If the value is already a number
      * it's taken as milliseconds and converted to nanoseconds. If it's a
      * string, it's parsed understanding unit suffixes, as for
-     * {@link #getMilliseconds(String)}.
+     * {@link #getDuration(String, TimeUnit)}.
      *
      * @param path
      *            path expression
@@ -447,7 +448,29 @@ public interface Config extends ConfigMergeable {
      * @throws ConfigException.BadValue
      *             if value cannot be parsed as a number of nanoseconds
      */
-    Long getNanoseconds(String path);
+    @Deprecated Long getNanoseconds(String path);
+
+    /**
+     * Get value as a duration in a specified TimeUnit. Naturally the precision will depend on the configured value.
+     * If the value is already a
+     * number, then it's interpreted to be in Milliseconds and then be converted to the requested TimeUnit;
+     * if it's a string, it's parsed understanding units suffixes like "10m" or "5ns" as documented in the <a
+     * href="https://github.com/typesafehub/config/blob/master/HOCON.md">the
+     * spec</a>.
+     *
+     * @param path
+     *            path expression
+     * @param unit
+     *            The TimeUnit in which the returned long should be
+     * @return the duration value at the requested path, in the given TimeUnit
+     * @throws ConfigException.Missing
+     *             if value is absent or null
+     * @throws ConfigException.WrongType
+     *             if value is not convertible to Long or String
+     * @throws ConfigException.BadValue
+     *             if value cannot be parsed as a number of the given TimeUnit
+     */
+    Long getDuration(String path, TimeUnit unit);
 
     /**
      * Gets a list value (with any element type) as a {@link ConfigList}, which
@@ -484,9 +507,11 @@ public interface Config extends ConfigMergeable {
 
     List<Long> getBytesList(String path);
 
-    List<Long> getMillisecondsList(String path);
+    @Deprecated List<Long> getMillisecondsList(String path);
 
-    List<Long> getNanosecondsList(String path);
+    @Deprecated List<Long> getNanosecondsList(String path);
+
+    List<Long> getDurationList(String path, TimeUnit unit);
 
     /**
      * Clone the config with only the given path (and its children) retained;
