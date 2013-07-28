@@ -111,6 +111,7 @@ final class Parser {
             // we want to build a list of newline tokens followed
             // by a non-newline non-comment token; with all comments
             // associated with that final non-newline non-comment token.
+            // TODO update this doc
             List<Token> newlines = new ArrayList<Token>();
             List<Token> comments = new ArrayList<Token>();
 
@@ -128,6 +129,25 @@ final class Parser {
                     comments.add(next);
                 } else {
                     // a non-newline non-comment token
+
+                    List<Token> nextLine = new ArrayList<Token>();
+                    while (tokens.hasNext()) {
+                        Token t = tokens.next();
+                        if (Tokens.isNewline(t)) {
+                            nextLine.add(t);
+                            break;
+                        } else if (Tokens.isComment(t)) {
+                            comments.add(t);
+                            break;
+                        } else {
+                            nextLine.add(t);
+                        }
+                    }
+                    ListIterator<Token> li = nextLine.listIterator(nextLine.size());
+                    while (li.hasPrevious()) {
+                        buffer.push(new TokenWithComments(li.previous()));
+                    }
+
                     break;
                 }
 
@@ -149,12 +169,8 @@ final class Parser {
         private TokenWithComments popToken() {
             if (buffer.isEmpty()) {
                 Token t = tokens.next();
-                if (Tokens.isComment(t)) {
-                    consolidateCommentBlock(t);
-                    return buffer.pop();
-                } else {
-                    return new TokenWithComments(t);
-                }
+                consolidateCommentBlock(t);
+                return buffer.pop();
             } else {
                 return buffer.pop();
             }
